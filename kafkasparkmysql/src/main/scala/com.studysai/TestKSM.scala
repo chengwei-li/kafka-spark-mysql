@@ -23,7 +23,7 @@ object TestKSM {
     val url = ""
     val userName = ""
     val password = ""
-    val conn = DriverManager.getConnection(url, userName, password)
+    
 
     /**
       * 创建sparkContext与SparkStreamingContext
@@ -53,6 +53,7 @@ object TestKSM {
     //
     tempDS.foreachRDD{ rdd =>{
         rdd.foreachPartition(records => {
+          val conn = DriverManager.getConnection(url, userName, password)
           val psta = conn.prepareStatement("INSERT INTO  UserInfo (name, age, sex, height) VALUES (?,?,?,?)")
           records.foreach(userInfo =>{
             psta.setString(1, userInfo.name)
@@ -62,10 +63,11 @@ object TestKSM {
             psta.execute()
           })
           psta.close()
+          conn.close()
         })
       }
     }
-    conn.close()
+    
     ssc.start()
     ssc.awaitTermination()
   }
